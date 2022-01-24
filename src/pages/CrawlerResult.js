@@ -1,5 +1,5 @@
 import React, {
-    useState
+  useState
 } from 'react';
 import {
   Table,
@@ -11,7 +11,8 @@ import {
   Space,
   Spin,
   Image,
-  Modal
+  Modal,
+  DatePicker
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import {
@@ -19,13 +20,14 @@ import {
 } from '../api/crawler';
 
 const CrawlerResult = () => {
+  const [form] = Form.useForm();
+  const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState({});
+  const [dateRange, setDateRange] = useState(['', '']);
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({});
   const [visible, setVisible] = useState(false);
-
-  const [form] = Form.useForm();
 
   const fetchCrawler = async (request) => {
     setLoading(true);
@@ -47,8 +49,12 @@ const CrawlerResult = () => {
     setLoading(false);
   };
 
-  const onFinish = (request) => {
-    fetchCrawler(request);
+  const onFinish = (items) => {
+    fetchCrawler({
+      ...items,
+      begin: dateRange[0],
+      end: dateRange[1],
+    });
   };
 
   const handlePageChange = (page) => {
@@ -58,7 +64,7 @@ const CrawlerResult = () => {
     });
   };
 
-  const handleCancel = () => {
+  const handleCancelBody = () => {
     setVisible(false);
   };
 
@@ -67,7 +73,7 @@ const CrawlerResult = () => {
       title: 'Title',
       dataIndex: 'title',
       width: '20%',
-      render: (_, record) => <a href={record.url} target="_blank">{record.title}</a>,
+      render: (_, record) => <a href={record.url} target="_blank" rel="noreferrer noopener">{record.title}</a>,
     },
     {
       title: 'Description',
@@ -78,7 +84,7 @@ const CrawlerResult = () => {
       title: 'Screenshot',
       dataIndex: 'screenshot',
       width: '20%',
-      render: (image) => 
+      render: (image) =>
         <Image
           width={200}
           src={`data:image/png;base64,${image}`}
@@ -101,7 +107,7 @@ const CrawlerResult = () => {
   ];
 
   return (
-    <Card title="Result">
+    <Card>
       <Spin spinning={loading}>
         <Form
           form={form}
@@ -113,13 +119,24 @@ const CrawlerResult = () => {
             name="title"
             label="Title"
           >
-            <Input/>
+            <Input />
           </Form.Item>
           <Form.Item
             name="description"
             label="Description"
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            label="Created At"
+          >
+            <Space>
+              <RangePicker
+                onChange={(_, dateStrings) => {
+                  setDateRange(dateStrings);
+                }}
+              />
+            </Space>
           </Form.Item>
           <Form.Item>
             <Space>
@@ -135,11 +152,11 @@ const CrawlerResult = () => {
         columns={columns}
         rowKey="id"
         dataSource={data}
+        loading={loading}
         pagination={{
           total: pagination.total,
           onChange: handlePageChange
         }}
-        loading={loading}
       />
 
       <Modal
@@ -147,7 +164,7 @@ const CrawlerResult = () => {
         visible={visible}
         okButtonProps={{ style: { display: 'none' } }}
         cancelButtonProps={{ style: { display: 'none' } }}
-        onCancel={handleCancel}
+        onCancel={handleCancelBody}
         width={1000}
       >
         <p>{visible.body}</p>

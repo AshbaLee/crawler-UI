@@ -34,7 +34,7 @@ const CrawlerInput = () => {
   };
 
   return (
-    <Card title="Input">
+    <Card>
       <Spin spinning={loading}>
         <Form
           form={form}
